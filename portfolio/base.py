@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 class PortfolioConstructor(ABC):
     def __init__(self, data: jnp, lambda_: float) -> None:
         """
-        Initialize generall portfolio constructor.
+        Initialize general portfolio constructor.
 
         Args:
-            data (jnp) :
+            data (jnp.array) :
             lambda_ (float): risk aversion parameter (> 0)
         Raises:
             ValueError: If lambda_ is not positive
@@ -17,6 +17,7 @@ class PortfolioConstructor(ABC):
         
         self.data = data
         self.lambda_ = lambda_
+        self.n, self.d = jnp.shape(self.data)
     
     @abstractmethod
     def construct(self)-> jnp:
