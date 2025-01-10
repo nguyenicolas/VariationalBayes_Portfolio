@@ -4,11 +4,11 @@ This repository contains code to apply Bayesian Approximations for the problem o
 ## Overview
 The goal is to maximize the exponential utility with risk paramter $\lambda$ under the posterior distribution (using available historaical data $H_n$), that is, finding the portfolio vector
 
-$$ \delta^* = \rm{argmin}_{\delta\in\mathcal{D}} \int\_{Y\_{n+1}} e^{-\lambda \delta^\top Y\_{n+1} } \pi(\mathrm{d}Y\_{n+1}\mid H_n), $$
+$$ \delta\_\lambda^* = \rm{argmin}_{\delta\in\mathcal{D}} \int\_{Y\_{n+1}} e^{-\lambda \delta^\top Y\_{n+1} } \pi(\mathrm{d}Y\_{n+1}\mid H_n), $$
 
 where $Y\_{n+1}$ is the future unknown obervation (a random variable) and $\pi(\mathrm{d}Y\_{n+1}\mid H_n)$ is the posterior predictive distribution, which is **intractable** for most model. 
 
-We propose three methods to find an approximation of $\delta^*$.
+We propose three methods to find an approximation of $\delta\_\lambda^*$.
 
 ## Portfolio construction with Markov-Chain Monte-Carlo (MCMC)
 ...
