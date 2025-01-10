@@ -2,19 +2,15 @@ import jax.numpy as jnp
 from abc import ABC, abstractmethod
 
 class PortfolioConstructor(ABC):
-    def __init__(self, data: jnp, params: dict) -> None:
-        """
-        Initialize general portfolio constructor.
+    """Abstract class for a VB-portfolio decision."""
+
+    def __init__(self, data: jnp.array, params: dict) -> None:
+        """Initialize portfolio constructor.
 
         Args:
-            data (jnp.array) :
-            lambda_ (float): risk aversion parameter (> 0)
-        Raises:
-            ValueError: If lambda_ is not positive
+            data: jnp.array of size (n, d) where n is the sample size and d the number of assets.
+            params: dict containing parameters.
         """
-        #if lambda_ <= 0:
-        #    raise ValueError("Risk aversion must be positive.")
-        
         for key, value in params.items():
             setattr(self, key, value)
 
@@ -23,12 +19,6 @@ class PortfolioConstructor(ABC):
     
     @abstractmethod
     def construct(self)-> jnp.array:
-        """
-        Abstract method to construct the portfolio.
-        Subclasses must implement this method.
-
-        Returns:
-            np.ndarray: Portfolio weights.
+        """Returns decision vector.
         """
         pass
-

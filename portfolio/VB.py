@@ -3,21 +3,24 @@ import jax.numpy as jnp
 from portfolio.base import PortfolioConstructor
 
 class VB_Portfolio(PortfolioConstructor):
+    """Variational Bayes portfolio construction with Gaussian-Wishart prior.
     """
-    Variational Bayes portfolio construction general class
-    """
+
     def __init__(self, data: jnp.array, params: dict) -> None:
-        """
-        Initialize Variational Bayes portfolio constructor.
+        """Initialize Variational Bayes portfolio constructor.
 
         Args:
-
+            data: jnp.array of size (n, d) where n is the sample size and d the number of assets.
+            params: dict containing parameters.
         """
         super().__init__(data, params)
         self.delta = jnp.zeros(self.d)
         self.create_priors()
     
-    def create_priors(self):
+    def create_priors(self) -> None:
+        """Initialize prior parameters for the Gaussian-Wishart model.
+        """
+
         self.mu_0 = jnp.mean(self.data, axis=0)
         self.Lambda_0 = jnp.eye(self.d)
         self.nu_0 = self.n + self.d
@@ -25,26 +28,47 @@ class VB_Portfolio(PortfolioConstructor):
         self.psi_0_inv = cov
         self.psi_0 = jnp.linalg.inv(cov) 
     
-    #@jax.jit
     def construct(self) -> jnp.array:
-        # perform gradient descent
+        """Returns decision vector with Gradient descent.
+
+        Returns: 
+            delta (jnp.array of size d): decision vector.
+        """
         for _ in range(self.nb_GD_iter) :
             self.one_step_GD()
-        #delta_normalized = self.delta #/ np.linalg.norm(self.delta, 1)
-        #self.VB_evaluate["delta"] = delta_normalized
         return self.delta
     
-    def unpack_phi(self, phi):
-        return phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda']
+    def init_phi(self) -> dict:
+        """Initializes dictionary and store variational parameters.
 
-    def init_phi(self):
+        Returns: 
+            phi (dict): dictionary containing variational parameters for the Gaussian-Wishart model.
+        """
         phi = dict()
         phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda'] = jnp.ones(self.d), jnp.eye(self.d), jnp.ones(self.d), jnp.eye(self.d), jnp.eye(self.d)
         return phi 
     
-    def fixed_point_operator(self, delta, phi):
+    def unpack_phi(self, phi):
+        """Transform a dictionary of parameters into a tuple of these parameters.
+
+        Args:
+            phi (dict): dictionary containing variational parameters.
+        Returns:
+            tuple of variational parameters.
         """
-        ...
+        return phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda']
+
+    
+    
+    def fixed_point_operator(self, delta, phi):
+        """Fixed-point operator for the Gaussian-Wishart model.
+
+        Args:
+            delta (jnp.array): evaluation input of the function.
+            phi (dict): dictionary of model parameters.
+        
+        Returns:
+            phi (dict): dictionary of updated model parameters.
         """
         xi_y, Lambda_y, xi_mu, Lambda_mu, psi_Lambda = self.unpack_phi(phi)
 
@@ -66,11 +90,19 @@ class VB_Portfolio(PortfolioConstructor):
             - 2 * jnp.outer(new_xi_y + jnp.sum(self.data, axis=0), new_xi_mu)
             + self.psi_0_inv
             )
-        
         phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda'] = new_xi_y, new_Lambda_y, new_xi_mu, new_Lambda_mu, new_psi_Lambda
         return phi
     
-    def compute_objective(self, phi, delta):
+    def compute_objective(self, delta, phi):
+        """Objective function evaluated in delta with variational parameters phi.
+
+        Args:
+            delta (jnp.array): evaluation point of the objective function.
+            phi (dict): dictionary of variational parameters.
+        
+        Returns: 
+            float: objective function evaluated in delta.
+        """
 
         xi_y, Lambda_y, xi_mu, Lambda_mu, psi_Lambda = self.unpack_phi(phi)
         nu_Lambda = self.n + self.nu_0 + 1
@@ -97,31 +129,46 @@ class VB_Portfolio(PortfolioConstructor):
             - self.lambda_ * jnp.dot(delta.T, xi_y)
             )
     
-    #@jax.jit
-    def fixed_point_solver(self, delta):
-        """Solve the fixed-point equation φ = g(φ, δ) using a fixed number of iterations."""
+    def fixed_point_solver(self, delta) -> dict:
+        """Solve the fixed-point equation using a fixed number of iterations.
+        
+        Args: 
+            delta (jnp.array): evaluation point.
+        Returns:
+            phi (dict): dictionary of variational parameters .
+        """
         
         phi = self.init_phi()
         for _ in range(self.nb_inner_iter):
             phi = self.fixed_point_operator(delta, phi)
         return phi
-
-    #@jax.jit
+    
     def objective(self, delta):
-        """
-        Compute the objective as a function of δ
+        """Compute objective function evaluated in a given decision.
+
+        Args:
+            delta (jnp.array): evaluation point.
+        Return: 
+            objective function evaluated in delta.
         """
 
         phi = self.fixed_point_solver(delta)
-        return self.compute_objective(phi, delta)
+        return self.compute_objective(delta, phi)
 
-    #@jax.jit
     def compute_grad(self, delta):
-        """Compute the gradient of the objective with respect to δ."""
+        """Compute the gradient of the objective with respect to delta.
+        
+        Args:
+            delta (jnp.array): evaluation point.
+        Returns:
+            gradient evaluated in delta.
+        """
         return jax.grad(self.objective)(delta)
     
     
-    def one_step_GD(self):
+    def one_step_GD(self) -> None:
+        """Performs one step of gradient descent.
+        """
         step_size = self.step_size_GD
         delta_old = jnp.copy(self.delta)
 
