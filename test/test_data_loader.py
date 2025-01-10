@@ -1,4 +1,3 @@
-
 from utils.data_loader import create_data
 
 world_indices = [

@@ -1,4 +1,5 @@
 import jax
+from typing import Tuple
 import jax.numpy as jnp
 from portfolio.base import PortfolioConstructor
 
@@ -48,7 +49,7 @@ class VB_Portfolio(PortfolioConstructor):
         phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda'] = jnp.ones(self.d), jnp.eye(self.d), jnp.ones(self.d), jnp.eye(self.d), jnp.eye(self.d)
         return phi 
     
-    def unpack_phi(self, phi):
+    def unpack_phi(self, phi: dict) -> Tuple:
         """Transform a dictionary of parameters into a tuple of these parameters.
 
         Args:
@@ -58,9 +59,7 @@ class VB_Portfolio(PortfolioConstructor):
         """
         return phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda']
 
-    
-    
-    def fixed_point_operator(self, delta, phi):
+    def fixed_point_operator(self, delta: jnp.array, phi: dict):
         """Fixed-point operator for the Gaussian-Wishart model.
 
         Args:
@@ -93,7 +92,7 @@ class VB_Portfolio(PortfolioConstructor):
         phi['xi_y'], phi['Lambda_y'], phi['xi_mu'], phi['Lambda_mu'], phi['psi_Lambda'] = new_xi_y, new_Lambda_y, new_xi_mu, new_Lambda_mu, new_psi_Lambda
         return phi
     
-    def compute_objective(self, delta, phi):
+    def compute_objective(self, delta: jnp.array, phi: dict):
         """Objective function evaluated in delta with variational parameters phi.
 
         Args:
@@ -129,7 +128,7 @@ class VB_Portfolio(PortfolioConstructor):
             - self.lambda_ * jnp.dot(delta.T, xi_y)
             )
     
-    def fixed_point_solver(self, delta) -> dict:
+    def fixed_point_solver(self, delta: jnp.array) -> dict:
         """Solve the fixed-point equation using a fixed number of iterations.
         
         Args: 
@@ -143,7 +142,7 @@ class VB_Portfolio(PortfolioConstructor):
             phi = self.fixed_point_operator(delta, phi)
         return phi
     
-    def objective(self, delta):
+    def objective(self, delta: jnp.array):
         """Compute objective function evaluated in a given decision.
 
         Args:
@@ -155,7 +154,7 @@ class VB_Portfolio(PortfolioConstructor):
         phi = self.fixed_point_solver(delta)
         return self.compute_objective(delta, phi)
 
-    def compute_grad(self, delta):
+    def compute_grad(self, delta: jnp.array):
         """Compute the gradient of the objective with respect to delta.
         
         Args:
