@@ -1,10 +1,10 @@
 import jax
 from typing import Tuple
 import jax.numpy as jnp
-from portfolio.base import PortfolioConstructor
+from portfolio.base import BayesianPortfolioConstructor
 
-class VB_Portfolio(PortfolioConstructor):
-    """Variational Bayes portfolio construction with Gaussian-Wishart prior.
+class VB_Portfolio(BayesianPortfolioConstructor):
+    """Variational Bayes portfolio construction on Gaussian-Wishart model.
     """
 
     def __init__(self, data: jnp.array, params: dict) -> None:
@@ -15,19 +15,9 @@ class VB_Portfolio(PortfolioConstructor):
             params: dict containing parameters.
         """
         super().__init__(data, params)
-        self.delta = jnp.zeros(self.d)
-        self.create_priors()
     
     def create_priors(self) -> None:
-        """Initialize prior parameters for the Gaussian-Wishart model.
-        """
-
-        self.mu_0 = jnp.mean(self.data, axis=0)
-        self.Lambda_0 = jnp.eye(self.d)
-        self.nu_0 = self.n + self.d
-        cov = jnp.cov(self.data.T)
-        self.psi_0_inv = cov
-        self.psi_0 = jnp.linalg.inv(cov) 
+        return super().create_priors()
     
     def construct(self) -> jnp.array:
         """Returns decision vector with Gradient descent.

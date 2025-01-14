@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-import portfolio.VB as VB
+import portfolio.MCMC as MCMC
 
 path_file = '/Users/nicolasnguyen/Documents/Projets/PortfolioVB/saved/daily_data.npy'
 data_df = jnp.load(path_file)
@@ -7,12 +7,12 @@ data_train = jnp.array(data_df)[200:1000, :10]
 
 params = {
     'lambda_' : 1,
-    'nb_inner_iter' : 5,
-    'nb_GD_iter' : 100,
-    'step_size_GD' : 1e2,
+    'M' : 5000,
+    'nb_GD_iter' : 30,
+    'step_size_GD' : 1e3,
 }
 
-VB_GW_Ptf = VB.VB_Portfolio(data_train, params)
-deltaVB = VB_GW_Ptf.construct()
+MCMC_GW_Ptf = MCMC.MCMC_Portfolio(data_train, params)
+deltaMCMC = MCMC_GW_Ptf.construct()
 
-print(jnp.round(deltaVB, 3))
+print(jnp.round(deltaMCMC, 3))
